@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Обратный отсчет</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+    <script src="js/jquery.min.js" type="text/javascript"
+            charset="utf-8"></script>
+    <script src="js/jquery.countdown.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        // Первая дата (год, месяц, день)
+        var  now = new Date();
+
+        // Вторая дата (год, месяц, день)
+        var finish = new Date (2016, 2, 3);
+
+        // Сколько целых дней между датами
+        var Seconds = (finish.getTime() - now.getTime())/1000;// s
+        var Minuts = Math.floor(Seconds/60);
+        Seconds = Math.floor(Seconds-(Minuts*60));
+        var Hours = Math.floor(Minuts/60);
+        Minuts = Minuts-(Hours*60);
+        Days = Math.floor(Hours/24);
+        Hours = Hours-(Days*24);
+        if(Seconds<10)Seconds = "0"+Seconds;
+        if(Minuts<10)Minuts = "0"+Minuts;
+        if(Hours<10)Hours = "0"+Hours;
+        var count = Hours + ":" + Minuts + ":" + Seconds;
+
+        function calculator() {
+             return Days;
+        }
+
+
+        $(function () {
+            $('#counter').countdown({
+                image: 'img/digits.png',
+                startTime: count
+            });
+        });
+    </script>
+    <style type="text/css">
+        br {
+            clear: both;
+        }
+
+        .cntSeparator {
+            font-size: 54px;
+            margin: 10px 7px;
+            color: #000;
+        }
+
+        .desc {
+            margin: 7px 3px;
+        }
+
+        .desc div {
+            float: left;
+            font-family: Arial;
+            width: 70px;
+            margin-right: 65px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="jumbotron">
+        <h3>До истечение контракта осталось: <script>document.write(calculator());</script> дней и</h3>
+
+        <div id="counter"></div>
+        <div class="desc">
+            <div>часов</div>
+            <div>минут</div>
+            <div>секунд</div>
+        </div>
+
+    </div>
+
+
+</div>
+<!-- /container -->
+
+
+</body>
+</html>
