@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -15,41 +14,117 @@
 
     <!-- Custom styles for this template -->
     <link href="css/jumbotron-narrow.css" rel="stylesheet">
-    <script src="js/jquery.min.js" type="text/javascript"
-            charset="utf-8"></script>
+
+    <!--javascript libs-->
+    <script src="js/jquery-1.11.3.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/jquery.countdown.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/date.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jquery.cookie.js" type="text/javascript" charset="utf-8"></script>
 
+    <!-- java script-->
     <script type="text/javascript">
-        // Первая дата (год, месяц, день)
-        var  now = new Date();
 
-        // Вторая дата (год, месяц, день)
-        var finish = new Date (2016, 2, 3);
 
-        // Сколько целых дней между датами
-        var Seconds = (finish.getTime() - now.getTime())/1000;// s
-        var Minuts = Math.floor(Seconds/60);
-        Seconds = Math.floor(Seconds-(Minuts*60));
-        var Hours = Math.floor(Minuts/60);
-        Minuts = Minuts-(Hours*60);
-        Days = Math.floor(Hours/24);
-        Hours = Hours-(Days*24);
-        if(Seconds<10)Seconds = "0"+Seconds;
-        if(Minuts<10)Minuts = "0"+Minuts;
-        if(Hours<10)Hours = "0"+Hours;
-        var count = Hours + ":" + Minuts + ":" + Seconds;
+        // Дата таймера (год, месяц, день, час)
+        var finish = new Date(2016, 2, 3, 18);
 
-        function calculator() {
-             return Days;
+        // начальное заглавие
+        var title = "До истечение контракта осталось:";
+
+        var count = getformat(finish); //форматированная строка с разностью дат
+
+        // Сколько целых месяце, дней, часов, ... между датами
+        // input - дата окончания, дата начала -  сейчас new Date();
+        function getformat(date2) {
+            var finish = date2;
+            var now = new Date();
+            var Seconds = (finish.getTime() - now.getTime()) / 1000;// ms
+            var Minuts = Math.floor(Seconds / 60);
+            Seconds = Math.floor(Seconds - (Minuts * 60));
+            var Hours = Math.floor(Minuts / 60);
+            Minuts = Minuts - (Hours * 60);
+            var Days = Math.floor(Hours / 24);
+            Hours = Hours - (Days * 24);
+            var Month = Math.floor(Days / 30);
+            Days = Days - (Month * 30);
+            if (Seconds < 10)Seconds = "0" + Seconds; //03 seconds
+            if (Minuts < 10)Minuts = "0" + Minuts;
+            if (Hours < 10)Hours = "0" + Hours; // 05 hours
+            if (Days < 10)Days = "0" + Days;
+            if (Month < 10)Month = "0" + Month;
+            return count = Month + ":" + Days + ":" + Hours + ":" + Minuts + ":" + Seconds;
         }
 
+        //      форматированая строка  сегоднешней даты
+        function retnow() {
+            return new Date().toString('dd.MM.yyyy HH:mm');
+        }
 
-        $(function () {
-            $('#counter').countdown({
+        //      форматированная строка окончания
+        function retfinish() {
+            return finish.toString('dd.MM.yyyy HH:mm');
+        }
+
+        //      начинаем отсчет
+        function start(count) {
+            var cd = $("#counter").empty(); //если перегружаем дату то обновляем (очищаем)  отсчет  в html
+            cd.countdown({
                 image: 'img/digits.png',
                 startTime: count
             });
+        }
+
+        //      обработчик формы с проверкой на пустоту и сравнением дат
+        function listener() {
+            $("#SetDateName").click(function () {
+                var name = $("#InputName").val();
+                var input = $('#InputFinishDate').val();
+                if (input != "" && name !="") { // не пустые строки
+                    var fin = new Date.parseExact(input, "dd.MM.yyyy HH:mm");
+                    if ((fin.getTime() - (new Date().getTime())) > 0) { // введенная дата должна быть позже чем сегодня
+                        finish = fin;
+                        title = name;
+                        $.cookie('finishDate', input, { //пишем в куку чтоб не вводить каждый раз, а потом считаем
+                            expires: 365 // 1 год
+                        });
+                        $.cookie('title', name, { //пишем в куку чтоб не вводить каждый раз, а потом считаем
+                            expires: 365 // 1 год
+                        });
+                        count = getformat(fin);
+                        start(count);
+                        $('#finDate').text("Событие наступит: " + input); // обновляем строку на стронице
+                        $("#titleEvents").text(name);
+                        $('#myModal').modal('hide'); // скрываем модальное окно
+                    } else {
+                        alert("Эта дата уже прошла"); // если дата прошла
+                    }
+                } else {
+                    alert("поле не должно быть пустым"); //если поле пустое
+                }
+
+            });
+        }
+
+        $(document).ready(function () {
+
+            $('#finDate').text("Событие наступит: " + retfinish());
+            listener(); // слушаем кнопку в модальном окне
+//          читаем куки и если не пустая запоминаем в finish  и на строницу
+            var cookieFinDate = $.cookie('finishDate');
+            var cookieTitle = $.cookie('title');
+            if (cookieFinDate != null && cookieTitle != null) {
+                $('#titleEvents').text(cookieTitle);
+                $('#finDate').text("Событие наступит: " + cookieFinDate);
+                var fin = new Date.parseExact(cookieFinDate, "dd.MM.yyyy HH:mm");
+                finish = fin;
+                title = cookieTitle;
+                count = getformat(fin);
+            }
+            start(count);
         });
+
+
     </script>
     <style type="text/css">
         br {
@@ -69,9 +144,9 @@
         .desc div {
             float: left;
             font-family: Arial;
-            width: 70px;
-            margin-right: 65px;
-            font-size: 13px;
+            width: 115px;
+            margin-right: 13px;
+            font-size: 20px;
             font-weight: bold;
             color: #000;
         }
@@ -83,20 +158,73 @@
 <div class="container">
 
     <div class="jumbotron">
-        <h3>До истечение контракта осталось: <script>document.write(calculator());</script> дней и</h3>
+        <h2 id="titleEvents">До истечение контракта осталось:</h2>
 
         <div id="counter"></div>
         <div class="desc">
-            <div>часов</div>
-            <div>минут</div>
-            <div>секунд</div>
+            <div>месяцы</div>
+            <div>дни</div>
+            <div>часы</div>
+            <div>минуты</div>
+            <div>секунды</div>
         </div>
 
     </div>
+    <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#myModal" id="ModalAdd">
+        Задать событие
+    </button>
 
+    <h4>Начало отсчета:
+        <javascript>
+            <script>document.write(retnow());</script>
+        </javascript>
+    </h4>
+    <h4 id="finDate">Событие наступит: </h4>
 
 </div>
 <!-- /container -->
+
+<footer class="footer">
+    <div class="container">
+        <address>
+            <p>Developed by <a href="mailto:sergio5990kruk@gmail.com">sergio5990</a></p>
+        </address>
+    </div>
+</footer>
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Укажите дату и событие</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label for="InputFinishDate" class="col-sm-3 control-label">дата и время</label>
+                        <div class="col-sm-9">
+                        <input type="text" class="form-control" id="InputFinishDate"  placeholder="03.03.2016 18:00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="InputName" class="col-sm-3 control-label">Событие</label>
+                        <div class="col-sm-9">
+                        <input type="text" class="form-control" id="InputName" placeholder="До истечение контракта осталось:">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="SetDateName" class="btn btn-primary">начать отсчёт</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 </body>

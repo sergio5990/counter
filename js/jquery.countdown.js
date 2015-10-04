@@ -12,7 +12,7 @@ jQuery.fn.countdown = function(userOptions)
     stepTime: 60,
     // startTime and format MUST follow the same format.
     // also you cannot specify a format unordered (e.g. hh:ss:mm is wrong)
-    format: "hh:mm:ss",
+    format: "MM:dd:hh:mm:ss",
     startTime: "01:12:32:55",
     digitImages: 6,
     digitWidth: 53,
